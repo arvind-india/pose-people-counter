@@ -1,0 +1,156 @@
+#!/bin/bash
+
+echo "
+                           .     .
+                        .  |\-^-/|  .    
+                       /| } O.=.O { |\ 
+                      /´ \ \_ ~ _/ / \`\ 
+                    /´ |  \-/ ~ \-/  | \`\ 
+                    |   |  /\\\\ //\  |   | 
+                     \|\|\/-\"\"-\"\"-\/|/|/
+                             ______/ /
+                             '------'
+                _   _        _  ___                         
+      _ __  ___| |_| |_ _  _| ||   \ _ _ __ _ __ _ ___ _ _  
+     | '  \/ -_)  _| ' \ || | || |) | '_/ _\` / _\` / _ \ ' \ 
+     |_|_|_\___|\__|_||_\_, |_||___/|_| \__,_\__, \___/_||_|
+                        |__/                 |___/          
+     -------------------------------------------------------
+                   github.com/methylDragon
+
+[PEOPLE COUNTER DEPENDENCIES INSTALL SCRIPT]
+
+INSTALLS
+--------
+- Tensorflow (CPU) for Python 3
+- Python dependencies for people counting
+  - scipy
+  - scikit-image
+  - matplotlib
+  - pyyaml
+  - easydict
+  - cython
+  - munkres
+
+WARNINGS
+--------
+- Please ensure that invoking 'pip' invokes the Python 3 version! If you don't know how to do this, please follow the step-by-step tutorial instead!
+
+The installation for cython and some of the other Python dependencies will take VERY LONG! If it looks like it's hanging, take a break! Wait 6 hours or so! (It's building from source)
+
+Then type 'ok' and press [enter] to continue
+"
+
+while [ -z "$warning_read" ]; do
+  read -p "Please read the warning: " answer
+
+  case "$answer" in
+    [Oo][Kk]) warning_read="TRUE" ;;
+    *) echo -e "\nInvalid response!\n" ;;
+  esac
+done
+
+# Reset timer
+SECONDS=0
+
+echo -e "\n-- INITIALISING INSTALL --"
+
+source deactivate
+conda install anaconda-client
+
+echo -e "\n-- SETTING PIP DEFAULT TIMEOUT TO 100 --"
+export PIP_DEFAULT_TIMEOUT=100
+
+# Activate the ML conda environment
+
+echo -e "\nActivating conda ML environment..." 
+source activate ML
+
+# Install Python Dependencies
+
+echo -e "\nInstalling Python dependencies"
+echo "Please be patient! This can take a while..."
+
+pip install --upgrade pip
+
+sudo apt-get install python3-scipy -y
+
+# Extra build dependencies
+sudo apt-get install libblas-dev libjpeg-dev zlib1g-dev -y
+
+pip --no-cache-dir install matplotlib
+
+# We need to ensure that some packages were installed from conda (PyFPE_jbuf error)
+# So we're going to try to uninstall them if they were installed via pip
+
+/usr/bin/yes | pip uninstall numpy scipy cython # Default yes!
+conda uninstall numpy scipy cython # Refreshing the installs also!
+conda install numpy scipy cython
+
+pip install pyyaml easydict munkres pyrebase
+pip install -U --default-timeout=100 scikit-image
+
+# And some graphics libraries dependencies for matplotlib and OpenCV
+pip install pgi pycairo cairocffi vext vext.gi
+
+echo "Done"
+
+# Install Tensorflow
+
+echo "Installing Tensorflow dependencies"
+sudo apt-get update
+sudo apt install libatlas-base-dev at-spi2-core -y
+
+echo "Installing Tensorflow"
+pip install tensorflow
+echo -e "\nDone!"
+
+# Validate the install
+
+read -p "
+== ! TIME TO VALIDATE THE TENSORFLOW INSTALL ! ==
+
+Press [enter] to continue"
+
+py_script="
+try:
+    import tensorflow as tf
+    hello = tf.constant('== Hi! Tensorflow is working! ==')
+    sess = tf.Session()
+    print(sess.run(hello))
+except:
+    print('== Tensorflow did not install correctly! Please try again! Check the tutorial! ==')
+"
+
+python -c "$py_script"
+
+echo "
+                 .     .
+              .  |\-^-/|  .    
+             /| } O.=.O { |\ 
+
+                   ***
+
+   == ! DEP INSTALLATION COMPLETE ! ==
+== GO FORTH AND BUILD MARVELOUS THINGS ==
+
+             - ! CH3EERS ! -
+"
+
+# Print time elapsed
+if (( $SECONDS > 3600 )) ; then
+    let "hours=SECONDS/3600"
+    let "minutes=(SECONDS%3600)/60"
+    let "seconds=(SECONDS%3600)%60"
+    echo -e "\n\nCompleted in $hours hour(s), $minutes minute(s) and $seconds second(s)" 
+elif (( $SECONDS > 60 )) ; then
+    let "minutes=(SECONDS%3600)/60"
+    let "seconds=(SECONDS%3600)%60"
+    echo -e "\n\nCompleted in $minutes minute(s) and $seconds second(s)"
+else
+    echo -e "\n\nCompleted in $SECONDS seconds"
+fi
+
+# Restart bash to source ~/.bashrc
+
+exec bash

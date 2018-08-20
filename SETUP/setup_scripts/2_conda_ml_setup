@@ -1,0 +1,140 @@
+#!/bin/bash
+
+echo "
+                           .     .
+                        .  |\-^-/|  .    
+                       /| } O.=.O { |\ 
+                      /´ \ \_ ~ _/ / \`\ 
+                    /´ |  \-/ ~ \-/  | \`\ 
+                    |   |  /\\\\ //\  |   | 
+                     \|\|\/-\"\"-\"\"-\/|/|/
+                             ______/ /
+                             '------'
+                _   _        _  ___                         
+      _ __  ___| |_| |_ _  _| ||   \ _ _ __ _ __ _ ___ _ _  
+     | '  \/ -_)  _| ' \ || | || |) | '_/ _\` / _\` / _ \ ' \ 
+     |_|_|_\___|\__|_||_\_, |_||___/|_| \__,_\__, \___/_||_|
+                        |__/                 |___/          
+     -------------------------------------------------------
+                   github.com/methylDragon
+
+[CONDA AND CONDA ML ENVIRONMENT SETUP SCRIPT]
+
+INSTALLS
+--------
+- (Mini)conda!
+
+NOTE
+----
+You may have to run once, restart the terminal (close and open it!), and run it again!
+
+conda (the command might not have been found)
+"
+
+read -p "Press [enter] to continue"
+
+# Reset timer
+SECONDS=0
+
+# Download the Miniconda install script and verify it
+
+wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-`uname -m`.sh
+md5sum Miniconda3-latest-Linux-`uname -m`.sh
+
+# Install Miniconda! Then delete the install file
+
+bash Miniconda3-latest-Linux-`uname -m`.sh
+rm Miniconda3-latest-Linux-`uname -m`.sh
+
+source ~/.bashrc
+
+# Prompt for ML creation
+
+while [ -z "$env_create" ]; do
+  read -p "Do you want to create an ML environment? [Y/N]: " answer
+
+  case "$answer" in
+    [Yy]) env_create="TRUE" ;;
+    [Nn]) env_create="FALSE" ;;
+    *) echo -e "\nInvalid response!\n" ;;
+  esac
+done
+
+if [ "$env_create" == 'TRUE' ]
+then
+  echo -e "\nCreating ML Conda Environment..."
+  conda create -n ML python=3.5
+  echo -e "\nDone!"
+
+  # Prompt for auto-sourcing
+
+  while [ -z "$source_ML" ]; do
+    read -p "Do you want to set the ML environment as default? [Y/N]: " answer
+
+    case "$answer" in
+      [Yy]) source_ML="TRUE" ;;
+      [Nn]) source_ML="FALSE" ;;
+      *) echo -e "\nInvalid response!\n" ;;
+    esac
+  done
+
+  if [ "$source_ML" == 'TRUE' ]
+  then
+    echo -e "\nSetting ML environment as default"
+
+    # Append to ~/.bashrc if not already in
+
+    declare -a file_appends=(
+      'source activate ML'
+      'export PATH="~/miniconda3/envs/ML/bin:$PATH"'
+    )
+
+    target_file="$HOME/.bashrc"
+
+    for i in "${file_appends[@]}" ; do
+      if ! grep -Fxq "$i" "$target_file" ; then
+        echo "$i" >> "$target_file"
+      else
+        :
+      fi
+    done
+
+    echo -e "\nDone!"
+
+  else
+    echo "Ok! Cool! If you ever want to use the environment, just go ahead and use"
+    echo "$ source activate ML"
+  fi
+
+fi
+
+echo "
+                .     .
+             .  |\-^-/|  .    
+            /| } O.=.O { |\ 
+
+                  ***
+
+  == ! CONDA INSTALLATION COMPLETE ! ==
+== GO FORTH AND BUILD MARVELOUS THINGS ==
+
+            - ! CH3EERS ! -
+"
+
+# Print time elapsed
+if (( $SECONDS > 3600 )) ; then
+    let "hours=SECONDS/3600"
+    let "minutes=(SECONDS%3600)/60"
+    let "seconds=(SECONDS%3600)%60"
+    echo -e "\n\nCompleted in $hours hour(s), $minutes minute(s) and $seconds second(s)" 
+elif (( $SECONDS > 60 )) ; then
+    let "minutes=(SECONDS%3600)/60"
+    let "seconds=(SECONDS%3600)%60"
+    echo -e "\n\nCompleted in $minutes minute(s) and $seconds second(s)"
+else
+    echo -e "\n\nCompleted in $SECONDS seconds"
+fi
+
+# Restart bash to source ~/.bashrc
+
+exec bash

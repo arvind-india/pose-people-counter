@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: spinnaker-python
+Version: 1.15.0.63
+Summary: A Python wrapper for the Spinnaker library.
+Home-page: https://www.ptgrey.com/
+Author: FLIR Integrated Imaging Solutions, Inc
+Author-email: UNKNOWN
+License: UNKNOWN
+Platform: UNKNOWN
+Requires-Dist: numpy
+
+UNKNOWN
+
+
